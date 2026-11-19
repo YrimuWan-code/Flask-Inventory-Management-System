@@ -1,6 +1,13 @@
+import requests
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+
+URL = "https://world.openfoodfacts.org"
+HEADERS = {
+    "User-Agent": "PatienceInventoryApp/1.0(patience@example.com)"
+}
+
 
 @app.route("/")
 def home():
@@ -31,7 +38,7 @@ inventory = [
         },
 ]
 
-next_status =3
+next_status = 3
 
 #route to get the inventory
 @app.route("/inventory", methods=["GET"])
@@ -100,6 +107,13 @@ def remove_item(status):
     inventory=[item for item in inventory if item ["status"] != status]
     return jsonify ({"message":f" Item with {status} removed successfully"}), 200
 
+#API fetching
+@app.route("/off/product/<barcode>", methods = ["GET"])
+def fetch_product(barcode):
+    url = f"https://world.openfoodfacts.org/api/v3.6/product/{barcode}.json"
+    response= requests.get(url, headers =HEADERS)
+    data = response.json()
+    return jsonify(data.get("product",{})), response.status_code
 
 if __name__ == "__main__":
     app.run(debug=True)
